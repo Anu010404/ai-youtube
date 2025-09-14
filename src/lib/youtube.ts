@@ -8,6 +8,7 @@ export async function searchYouTube(searchQuery: string) {
     `https://www.googleapis.com/youtube/v3/search?key=${process.env.YOUTUBE_API_KEY}&q=${searchQuery}&videoDuration=medium&videoEmbeddable=true&type=video&maxResults=5&part=snippet`,
     {
       method: "GET",
+      cache: "no-store",
     }
   );
   const json = await response.json();
@@ -20,7 +21,16 @@ export async function searchYouTube(searchQuery: string) {
     console.log("youtube fail: no items found");
     return null;
   }
-  return json.items[0].id.videoId;
+  const videoIds = json.items
+    .map((item: any) => item.id.videoId)
+    .filter((id: any) => id);
+
+  if (videoIds.length === 0) {
+    console.log("youtube fail: no videoIds found in items");
+    return null;
+  }
+
+  return videoIds;
 }
 
 export async function getTranscript(videoId: string) {
@@ -37,29 +47,3 @@ export async function getTranscript(videoId: string) {
     return "";
   }
  }
-
-export async function getQuestionsFromTranscript(transcript:string,course_title:string) {
-    type Question={
-        question: string;
-        answer: string;
-        option1: string;
-        option2: string;
-        option3: string;
-        option4: string;
-    };
-    const questions: Question[] = await strict_output(
-        "You are a helpful AI that is able to generate a list of mcq questions and answers. The length of each answer should not be more than 15 words.",
-        new Array(5).fill(
-            `You are to generate a random hard mcq question about ${course_title} with context of the following transcript: ${transcript}`
-        ),
-        {
-            question: "question",
-            answer: "answer with maximum of 15 words",
-            option1: "option1 with maximum of 15 words",
-            option2: "option2 with maximum of 15 words",
-            option3: "option3 with maximum of 15 words",
-            option4: "option4 with maximum of 15 words",
-        }
-    );
-    return questions;
-}

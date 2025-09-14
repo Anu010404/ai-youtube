@@ -69,7 +69,7 @@ model Chapter{
   name String
   youtubeSearchQuery String
   videoId String?
-  summary String? @db.VarChar(3000)
+  summary String? @db.Text
   unit Unit @relation(fields: [unitId], references: [id], onDelete: Cascade)
   questions Question[]
   @@index([unitId],name: "unitId")
@@ -78,8 +78,8 @@ model Chapter{
 model Question{
   id String @id @default(cuid())
   chapterId String
-  question String @db.VarChar(3000)
-  answer String @db.VarChar(3000)
+  question String @db.Text
+  answer String @db.Text
   options String[]
   chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   @@index([chapterId],name: "chapterId")

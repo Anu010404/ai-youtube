@@ -49,9 +49,8 @@ export async function POST(request: Request) {
             name: title,
             image: course_image,
             userId: session.user.id,
-        },
+        }
     });
-
     for (const unit of output_units) {
         const unitTitle = unit.title;
         const prismaUnit = await prisma.unit.create({
@@ -59,7 +58,7 @@ export async function POST(request: Request) {
                 name: unitTitle,
                 courseId: course.id,
             }
-        })
+        });
         await prisma.chapter.createMany({
             data: unit.chapters.map((chapter) => {
                 return {
@@ -78,6 +77,9 @@ export async function POST(request: Request) {
         }
         console.error("--- /api/course/createChapters error ---", error);
         if (error instanceof Error) {
+            if (error.message.includes("API rate limit exceeded")) {
+                return new NextResponse(error.message, { status: 429 });
+            }
             return new NextResponse(error.message, { status: 500 });
         }
         return new NextResponse("An internal error occurred", { status: 500 });

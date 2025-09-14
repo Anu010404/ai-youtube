@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, GoogleGenerativeAIFetchError } from "@google/generative-ai";
 
 const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
@@ -45,35 +45,33 @@ export async function strict_output(
       output_format_prompt += `\nGenerate an array of json, one json for each input element.`;
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-    const full_prompt =
-      system_prompt +
-      output_format_prompt +
-      error_msg +
-      "\n\n" +
-      user_prompt.toString();
-
-    const result = await model.generateContent(full_prompt);
-    const response = result.response;
-    let res = response.text();
-
-    // Gemini may wrap the JSON in ```json ... ```, so we extract it.
-    const jsonMatch = res.match(/```json\n([\s\S]*?)\n```/);
-    if (jsonMatch && jsonMatch[1]) {
-      res = jsonMatch[1];
-    }
-
-    // ensure that we don't replace away apostrophes in text
-    res = res.replace(/(\w)"(\w)/g, "$1'$2");
-
-    if (verbose) {
-      console.log("System prompt:", system_prompt + output_format_prompt + error_msg);
-      console.log("\nUser prompt:", user_prompt);
-      console.log("\nGPT response:", res);
-    }
-
     // try-catch block to ensure output format is adhered to
     try {
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+      const full_prompt =
+        system_prompt +
+        output_format_prompt +
+        error_msg +
+        "\n\n" +
+        user_prompt.toString();
+      const result = await model.generateContent(full_prompt);
+      const response = result.response;
+      let res = response.text();
+
+      // Gemini may wrap the JSON in ```json ... ```, so we extract it.
+      const jsonMatch = res.match(/```json\n([\s\S]*?)\n```/);
+      if (jsonMatch && jsonMatch[1]) {
+        res = jsonMatch[1];
+      }
+
+      // ensure that we don't replace away apostrophes in text
+      res = res.replace(/(\w)"(\w)/g, "$1'$2");
+
+      if (verbose) {
+        console.log("System prompt:", system_prompt + output_format_prompt + error_msg);
+        console.log("\nUser prompt:", user_prompt);
+        console.log("\nGPT response:", res);
+      }
       let output = JSON.parse(res);
 
       if (list_input) {
@@ -126,14 +124,17 @@ export async function strict_output(
       }
 
       return list_input ? output : output[0];
-    } catch (e) {
+    } catch (e: any) {
+      if (e instanceof GoogleGenerativeAIFetchError && e.status === 429) {
+        throw new Error("API rate limit exceeded. Please check your plan and billing details, or wait and try again later.");
+      }
+
       // Log the error for debugging
-      error_msg = `\n\nResult: ${res}\n\nError message: ${e}`;
+      error_msg = `\n\nError message: ${e.message}`;
       console.error(
         `An exception occurred on attempt ${i + 1}.`,
         e
       );
-      console.error("Current invalid json format: ", res);
 
       // If we're not on the last try, wait before retrying
       if (i < num_tries - 1) {
