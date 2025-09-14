@@ -62,7 +62,21 @@ export async function POST(req: Request) {
     let transcript: string | null = null;
 
     // Filter out already used videos
-    const availableVideoIds = videoIds.filter((id) => !usedVideoIds.has(id));
+    interface Chapter {
+      id: string;
+      name: string;
+      youtubeSearchQuery: string;
+      unit: {
+        courseId: string;
+      };
+      videoId?: string | null;
+    }
+
+    interface UsedVideoIdResult {
+      videoId: string | null;
+    }
+
+    const availableVideoIds: string[] = (videoIds as string[]).filter((id: string) => !usedVideoIds.has(id));
     if (availableVideoIds.length === 0) {
       return NextResponse.json(
         { success: false, error: "Could not find a unique video for this chapter. All found videos are already in use." },
