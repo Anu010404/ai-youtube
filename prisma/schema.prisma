@@ -1,13 +1,13 @@
 generator client {
   provider = "prisma-client-js"
 }
- 
+
 datasource db {
   provider     = "postgresql"
   url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
- 
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -21,10 +21,11 @@ model Account {
   scope             String?
   id_token          String? @db.Text
   session_state     String?
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([provider, providerAccountId])
 }
- 
+
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
@@ -32,55 +33,107 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
- 
+
 model User {
-  id            String    @id @default(cuid())
+  id            String                @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?               @unique
   emailVerified DateTime?
-  image    String?
-  credits Int @default(10)
-  accounts Account[]
-  sessions Session[]
-  courses Course[]
+  image         String?
+  credits       Int                   @default(10)
+  accounts      Account[]
+  sessions      Session[]
+  courses       Course[]
+  progress      UserChapterProgress[]
+  quizProgress  UserQuizProgress[]
 }
 
-model Course{
-  id String @id @default(cuid())
-  name String
-  image String?
-  units Unit[]
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Course {
+  id     String  @id @default(cuid())
+  name   String
+  image  String
+  units  Unit[]
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
-model Unit{
-  id String @id @default(cuid())
-  courseId String
-  name String
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  chapters Chapter[]
-  @@index([courseId],name: "courseId")
+model Unit {
+  id        String    @id @default(cuid())
+  name      String
+  courseId  String
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapters  Chapter[]
+  quizzes   Quiz[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
-model Chapter{
-  id String @id @default(cuid())
-  unitId String
-  name String
+model Chapter {
+  id                 String                @id @default(cuid())
+  name               String
   youtubeSearchQuery String
-  videoId String?
-  summary String? @db.Text
-  unit Unit @relation(fields: [unitId], references: [id], onDelete: Cascade)
-  questions Question[]
-  @@index([unitId],name: "unitId")
+  videoId            String?
+  summary            String?               @db.Text
+  unitId             String
+  unit               Unit                  @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  progress           UserChapterProgress[]
+  quiz               Quiz?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
 }
 
-model Question{
-  id String @id @default(cuid())
-  chapterId String
-  question String @db.Text
-  answer String @db.Text
-  options String[]
-  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
-  @@index([chapterId],name: "chapterId")
+// Add this new model for Quizzes
+model Quiz {
+  id        String  @id @default(cuid())
+  name      String
+  unitId    String
+  chapterId String? @unique // A quiz can optionally belong to a specific chapter
+  type      String // "CHAPTER", "UNIT_TEST", or "COURSE_TEST"
+
+  unit      Unit               @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  chapter   Chapter?           @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  questions Question[]
+  progress  UserQuizProgress[]
 }
+
+// Add this new model for tracking user progress
+model UserChapterProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  chapterId String
+  completed Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, chapterId])
+}
+
+model UserQuizProgress {
+  id        String  @id @default(cuid())
+  userId    String
+  quizId    String
+  completed Boolean @default(false)
+  score     Int?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, quizId])
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  options   Json
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+

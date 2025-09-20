@@ -125,25 +125,16 @@ export async function strict_output(
 
       return list_input ? output : output[0];
     } catch (e: any) {
-      if (e instanceof GoogleGenerativeAIFetchError && e.status === 429) {
-        throw new Error("API rate limit exceeded. Please check your plan and billing details, or wait and try again later.");
-      }
-
-      // Log the error for debugging
       error_msg = `\n\nError message: ${e.message}`;
       console.error(
         `An exception occurred on attempt ${i + 1}.`,
         e
       );
 
-      // If we're not on the last try, wait before retrying
-      if (i < num_tries - 1) {
-        // Use exponential backoff with jitter to wait before the next attempt
-        // Increased base wait time to 3 seconds
-        const wait_time = 3000 * 2 ** i + Math.random() * 1000; // Start with ~3s, then ~6s, ~12s, etc.
-        console.log(`Attempt ${i + 1}/${num_tries} failed. Retrying in ${Math.round(wait_time / 1000)}s...`);
-        await delay(wait_time);
-      }
+      // Use exponential backoff with jitter to wait before the next attempt
+      const wait_time = 3000 * 2 ** i + Math.random() * 1000; // Start with ~3s, then ~6s, ~12s, etc.
+      console.log(`Attempt ${i + 1}/${num_tries} failed. Retrying in ${Math.round(wait_time / 1000)}s...`);
+      await delay(wait_time);
     }
   }
 

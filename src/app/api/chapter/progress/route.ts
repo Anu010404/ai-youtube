@@ -3,9 +3,9 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/auth";
 
-const quizProgressSchema = z.object({
-  quizId: z.string(),
-  score: z.number().min(0),
+const chapterProgressSchema = z.object({
+  chapterId: z.string(),
+  completed: z.boolean(),
 });
 
 export async function POST(req: Request) {
@@ -16,24 +16,24 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { quizId, score } = quizProgressSchema.parse(body);
+    const { chapterId, completed } = chapterProgressSchema.parse(body);
 
-    const quiz = await prisma.quiz.findUnique({
-      where: { id: quizId },
+    const chapter = await prisma.chapter.findUnique({
+      where: { id: chapterId },
     });
-    if (!quiz) {
-      return new NextResponse("Quiz not found", { status: 404 });
+    if (!chapter) {
+      return new NextResponse("Chapter not found", { status: 404 });
     }
 
-    const progress = await prisma.userQuizProgress.upsert({
+    const progress = await prisma.userChapterProgress.upsert({
       where: {
-        userId_quizId: {
+        userId_chapterId: {
           userId: session.user.id,
-          quizId,
+          chapterId,
         },
       },
-      update: { score, completed: true },
-      create: { userId: session.user.id, quizId, score, completed: true },
+      update: { completed },
+      create: { userId: session.user.id, chapterId, completed },
     });
 
     return NextResponse.json(progress);
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     if (error instanceof z.ZodError) {
       return new NextResponse("Invalid body", { status: 400 });
     }
-    console.error("[QUIZ_PROGRESS_POST]", error);
+    console.error("[CHAPTER_PROGRESS_POST]", error);
     return new NextResponse("An internal error occurred", { status: 500 });
   }
 }

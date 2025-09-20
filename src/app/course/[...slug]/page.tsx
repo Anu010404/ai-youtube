@@ -1,11 +1,13 @@
-import React from "react";
-import { prisma } from "@/lib/db";
-import { redirect } from "next/navigation";
 import CourseSideBar from "@/components/CourseSideBar";
 import MainVideoSummary from "@/components/MainVideoSummary";
 import QuizCards from "@/components/QuizCards";
-import Link from "next/link";
+import { prisma } from "@/lib/db";
+import { getAuthSession } from "@/lib/auth";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import React from "react";
+
 type Props = {
     params:{
         slug: string[];
@@ -14,6 +16,10 @@ type Props = {
 
 const CoursePage = async({params: {slug}}: Props) => {
     const [courseId, unitIndexParam, chapterIndexParam] = slug;
+    const session = await getAuthSession();
+    if (!session?.user) {
+        return redirect("/gallery");
+    }
     const course = await prisma.course.findUnique({
         where: {
             id: courseId,
@@ -21,14 +27,33 @@ const CoursePage = async({params: {slug}}: Props) => {
         include: {
             units: {
                 include: {
-                    chapters: {include: {questions: true},
+                    chapters: {
+                        include: {
+                            quiz: {
+                                include: {
+                                    questions: true,
+                                    progress: {
+                                        where: {
+                                            userId: session.user.id,
+                                        }
+                                    }
+                                },
+                            },
+                            progress: {
+                                where: {
+                                    userId: session.user.id,
+                                }
+                            },
+                        },
+                    },
+                    quizzes: true, // Also include unit-level tests
                 },
             },
         },
-}});
-if (!course) {
-    return redirect('/gallery');
-}
+    });
+    if (!course) {
+        return redirect('/gallery');
+    }
     let unitIndex = parseInt(unitIndexParam);
     let chapterIndex = parseInt(chapterIndexParam);
     const unit = course.units[unitIndex];
@@ -43,14 +68,14 @@ if (!course) {
     const prevChapter = unit.chapters[chapterIndex - 1];
     return (
        <div>
-        <CourseSideBar course={course} currentChapterId={chapter.id}/>
+        <CourseSideBar course={course} currentChapterId={chapter.id} />
        <div>
             <div className="ml-[400px] px-8">
-                <div className='flex'>
-                <MainVideoSummary chapter={chapter} unit={unit} unitIndex={unitIndex} chapterIndex={chapterIndex}/>
-                <QuizCards chapter={chapter} />
+                <div>
+                    <MainVideoSummary chapter={chapter} unit={unit} unitIndex={unitIndex} chapterIndex={chapterIndex}/>
+                    <QuizCards chapter={chapter} />
                 </div>
-                <div className='flex-[1] h=[1px] mt-4 text-gray-500 bg-gray-500' />
+                <div className="flex-[1] h-px mt-4 bg-gray-500" />
                 <div className="flex pb-8">
                     {prevChapter && (
                         <Link href={`/course/${course.id}/${unitIndex}/${chapterIndex - 1}`} className="flex mt-4 mr-auto w-fit">
