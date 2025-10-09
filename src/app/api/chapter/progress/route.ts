@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getAuthSession } from "@/lib/auth";
-
-const chapterProgressSchema = z.object({
-  chapterId: z.string(),
-  completed: z.boolean(),
-});
+import { chapterProgressSchema } from "@/validators/course";
 
 export async function POST(req: Request) {
   try {

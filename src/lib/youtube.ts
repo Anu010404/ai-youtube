@@ -9,29 +9,53 @@ export type YouTubeSearchResult = {
   description: string;
 };
 
+type YouTubeSearchItem = {
+  id: {
+    videoId: string;
+  };
+  snippet: {
+    title: string;
+    description: string;
+  };
+};
+
+type YouTubeVideoStatsItem = {
+  id: string;
+  snippet: {
+    title: string;
+    description: string;
+    publishedAt: string;
+  };
+  statistics: {
+    viewCount: string;
+    likeCount?: string; // likeCount can be disabled
+  };
+};
+
 /**
  * Searches YouTube for videos based on a query.
  * @param searchQuery The search term.
  * @returns A promise that resolves to an array of video search results or null if an error occurs.
  */
 export async function searchYouTube(searchQuery: string): Promise<YouTubeSearchResult[] | null> {
-  searchQuery = encodeURIComponent(searchQuery);
-  console.count("youtube search");
-  const response = await fetch(
-    `https://www.googleapis.com/youtube/v3/search?key=${process.env.YOUTUBE_API_KEY}&q=${searchQuery}&videoDuration=medium&videoEmbeddable=true&type=video&part=snippet&maxResults=10`
-  );
-  const json = await response.json();
-  if (!json.items) {
-    console.error("YouTube API did not return any items. Response:", JSON.stringify(json, null, 2));
-    return null;
-  }
-  return json.items.map((item: any) => {
-    return {
-      title: item.snippet.title,
-      id: item.id.videoId,
-      description: item.snippet.description,
-    };
-  });
+    searchQuery = encodeURIComponent(searchQuery);
+    console.count("youtube search");
+    const response = await fetch(
+      `https://www.googleapis.com/youtube/v3/search?key=${process.env.YOUTUBE_API_KEY}&q=${searchQuery}&videoDuration=medium&videoEmbeddable=true&type=video&part=snippet&maxResults=10`
+    );
+    const json = await response.json();
+    if (!json.items) {
+      console.error("YouTube API did not return any items. Response:", JSON.stringify(json, null, 2));
+      return null;
+    }
+    return json.items.map((item: YouTubeSearchItem) => {
+      return {
+        id: item.id.videoId,
+        title: item.snippet.title,
+        description: item.snippet.description,
+        // The search result doesn't contain stats, so we'll fetch them in getRankedVideos
+      };
+    });
 }
 
 /**
@@ -68,7 +92,7 @@ export async function generateSummary(transcript: string): Promise<string> {
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-pro-latest" });
     const prompt = `Based on the following video transcript, provide a concise, easy-to-read summary.
     Focus on the main points and key takeaways. Present the summary as a few clear paragraphs. Do not mention sponsors or unrelated topics.
 
@@ -83,7 +107,9 @@ export async function generateSummary(transcript: string): Promise<string> {
 }
 
 // Initialize the Google Generative AI client
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY as string);
+const genAI = new GoogleGenerativeAI(
+  process.env.GOOGLE_API_KEY as string
+);
 
 /**
  * Defines the structure for a single multiple-choice question.
@@ -112,12 +138,7 @@ export async function generateQuizQuestions(context: string, questionCount: numb
   }
 
   try {
-    const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash-latest",
-      generationConfig: {
-        responseMimeType: "application/json",
-      },
-    });
+    const model = genAI.getGenerativeModel({ model: "gemini-pro-latest", generationConfig: { responseMimeType: "application/json" } });
     
     const prompt = `You are a helpful AI that creates educational material.
     Based on the following context, generate exactly ${questionCount} multiple-choice questions to test a user's understanding of the key concepts.
@@ -168,10 +189,10 @@ export async function getRankedVideos(searchQuery: string) {
   const WEIGHT_RECENCY = 0.1;
   // const WEIGHT_SENTIMENT = 0.25;
 
-  // --- Step 1: Fetch Video Statistics and Perform Initial Ranking ---
+  // --- Step 1: Fetch Video Statistics in the same search call if possible, or a separate one ---
   const videoIds = videos.map((video) => video.id).join(",");
   const statsResponse = await fetch(
-    `https://www.googleapis.com/youtube/v3/videos?key=${process.env.YOUTUBE_API_KEY}&id=${videoIds}&part=statistics,snippet`
+    `https://www.googleapis.com/youtube/v3/videos?key=${process.env.YOUTUBE_API_KEY}&id=${videoIds}&part=statistics,snippet`,
   );
   const statsJson = await statsResponse.json();
   if (!statsJson.items) {
@@ -179,10 +200,10 @@ export async function getRankedVideos(searchQuery: string) {
   }
 
   let initialRankedVideos = statsJson.items
-    .map((item: any) => {
+    .map((item: YouTubeVideoStatsItem) => {
       const viewCount = parseInt(item.statistics.viewCount, 10) || 0;
       // Gracefully handle cases where likes are disabled
-      const likeCount = parseInt(item.statistics.likeCount, 10) || 0;
+      const likeCount = parseInt(item.statistics.likeCount || '0', 10);
       const publishedAt = new Date(item.snippet.publishedAt);
 
       // Tier 1: Basic Thresholds

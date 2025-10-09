@@ -38,7 +38,6 @@ const QuizCards = ({ chapter }: Props) => {
     },
   });
 
-  // Correctly and safely access the questions from the nested quiz object
   const questions = React.useMemo(() => chapter.quiz?.questions || [], [chapter.quiz]);
 
   const checkAnswer = React.useCallback(() => {
@@ -59,10 +58,10 @@ const QuizCards = ({ chapter }: Props) => {
         { quizId: chapter.quiz.id, score: correctAnswers },
         {
           onSuccess: () => {
-            toast.success("Quiz progress saved!");
+            toast.success("✨ Quiz progress saved!");
           },
           onError: () => {
-            toast.error("Failed to save quiz progress.");
+            toast.error("❌ Failed to save quiz progress.");
           },
         }
       );
@@ -71,56 +70,76 @@ const QuizCards = ({ chapter }: Props) => {
 
   if (questions.length === 0) {
     return (
-        <div className="flex-[1] ml-8">
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-2xl font-bold">{chapter.quiz?.name || 'Quiz'}</CardTitle>
-                    <CardDescription>No questions available for this chapter's quiz.</CardDescription>
-                </CardHeader>
-            </Card>
-        </div>
+      <div className="flex-[1] ml-8">
+        <Card className="border border-zinc-200 dark:border-zinc-800 shadow-sm rounded-2xl">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+              {chapter.quiz?.name || "Quiz"}
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              No questions available for this chapter’s quiz.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
     );
   }
 
   return (
     <div className="flex-[1] ml-8">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">{chapter.quiz?.name || 'Chapter Quiz'}</CardTitle>
-          <CardDescription>
-            Test your knowledge on what you have learned in this chapter.
+      <Card className="border border-zinc-200 dark:border-zinc-800 shadow-xl rounded-2xl hover:shadow-purple-300/40 transition-all duration-200">
+        <CardHeader className="pb-4 space-y-1">
+          <CardTitle className="text-3xl font-extrabold text-purple-600 dark:text-purple-400">
+            {chapter.quiz?.name || "Chapter Quiz"}
+          </CardTitle>
+          <CardDescription className="text-base text-muted-foreground">
+            Test your understanding of this chapter below.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+
+        <CardContent className="space-y-6">
           {showResults && (
-            <div className="text-center font-semibold text-lg mb-4">
-              You scored {score} out of {questions.length}!
+            <div className="text-center font-semibold text-lg text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/40 p-3 rounded-lg shadow-inner">
+              🌟 You scored {score} out of {questions.length}!
             </div>
           )}
+
           {questions.map((question, index) => {
-            // The 'options' field from Prisma is already a JSON array (JsonValue).
-            // We just need to ensure it's an array before mapping.
             const options = Array.isArray(question.options)
               ? (question.options as string[])
               : [];
             return (
-              <div key={question.id} className="my-4">
-                <p className="font-semibold">{index + 1}. {question.question}</p>
-                <div className="flex flex-col mt-2">
+              <div
+                key={question.id}
+                className="my-6 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 hover:shadow-md hover:border-purple-300/60 transition-all"
+              >
+                <p className="font-semibold text-lg text-foreground mb-3">
+                  {index + 1}. {question.question}
+                </p>
+                <div className="flex flex-col gap-2">
                   {options.map((option) => {
                     const isSelected = answers[question.id] === option;
                     const isCorrect = option === question.answer;
                     return (
                       <Button
                         key={option}
-                        variant={isSelected ? "default" : "secondary"}
-                        className={cn("w-full justify-start my-1 h-auto py-2 text-left", {
-                          "bg-green-700 text-white hover:bg-green-700": showResults && isCorrect,
-                          "bg-red-700 text-white hover:bg-red-700": showResults && !isCorrect && isSelected,
-                        })}
+                        variant={isSelected ? "default" : "outline"}
+                        className={cn(
+                          "w-full justify-start py-3 text-left rounded-lg transition-all border font-medium",
+                          {
+                            "bg-purple-600 text-white hover:bg-purple-600":
+                              showResults && isCorrect,
+                            "bg-red-600 text-white hover:bg-red-600":
+                              showResults && !isCorrect && isSelected,
+                            "border-purple-400/60 hover:bg-purple-100 hover:text-purple-800 dark:hover:bg-purple-900/40":
+                              !showResults,
+                            "ring-2 ring-purple-400":
+                              isSelected && !showResults,
+                          }
+                        )}
                         onClick={() => {
-                            if (showResults) return;
-                            setAnswers((prev) => ({ ...prev, [question.id]: option }));
+                          if (showResults) return;
+                          setAnswers((prev) => ({ ...prev, [question.id]: option }));
                         }}
                         disabled={showResults}
                       >
@@ -134,22 +153,32 @@ const QuizCards = ({ chapter }: Props) => {
           })}
         </CardContent>
       </Card>
-      {showResults ? (
-        <Button className="w-full mt-2" onClick={() => {
-          setAnswers({});
-          setQuestionState({});
-          setShowResults(false);
-          setScore(0);
-        }}>
-          Retake Quiz
-          <RefreshCcw className="w-4 h-4 ml-2" />
-        </Button>
-      ) : (
-        <Button className="w-full mt-2" onClick={checkAnswer} disabled={Object.keys(answers).length !== questions.length}>
-          Check Answers
-          <ChevronRight className="w-4 h-4 ml-1" />
-        </Button>
-      )}
+
+      <div className="mt-6">
+        {showResults ? (
+          <Button
+            className="w-full py-3 text-lg rounded-lg shadow-md bg-purple-600 hover:bg-purple-700 text-white"
+            onClick={() => {
+              setAnswers({});
+              setQuestionState({});
+              setShowResults(false);
+              setScore(0);
+            }}
+          >
+            Retake Quiz
+            <RefreshCcw className="w-4 h-4 ml-2" />
+          </Button>
+        ) : (
+          <Button
+            className="w-full py-3 text-lg rounded-lg shadow-md bg-purple-600 hover:bg-purple-700 text-white"
+            onClick={checkAnswer}
+            disabled={Object.keys(answers).length !== questions.length}
+          >
+            Check Answers
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,47 +1,40 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { ZodError } from "zod";
 import { getAuthSession } from "@/lib/auth";
 
-const quizProgressSchema = z.object({
-  quizId: z.string(),
-  score: z.number().min(0),
+const deleteCourseSchema = z.object({
+  courseId: z.string(),
 });
 
-export async function POST(req: Request) {
+export async function DELETE(
+  req: Request,
+  { params }: { params: { courseId: string } }
+) {
   try {
     const session = await getAuthSession();
     if (!session?.user) {
-      return new NextResponse("unauthorized", { status: 401 });
+      return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const body = await req.json();
-    const { quizId, score } = quizProgressSchema.parse(body);
-
-    const quiz = await prisma.quiz.findUnique({
-      where: { id: quizId },
-    });
-    if (!quiz) {
-      return new NextResponse("Quiz not found", { status: 404 });
-    }
-
-    const progress = await prisma.userQuizProgress.upsert({
+    const { courseId } = deleteCourseSchema.parse(params);
+    const course = await prisma.course.findUnique({
       where: {
-        userId_quizId: {
-          userId: session.user.id,
-          quizId,
-        },
+        id: courseId,
+        userId: session.user.id, // Ensure the user owns the course
       },
-      update: { score, completed: true },
-      create: { userId: session.user.id, quizId, score, completed: true },
     });
-
-    return NextResponse.json(progress);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return new NextResponse("Invalid body", { status: 400 });
+    if (!course) {
+      return new NextResponse("Course not found or you do not have permission to delete it.", { status: 404 });
     }
-    console.error("[QUIZ_PROGRESS_POST]", error);
+    await prisma.course.delete({ where: { id: courseId } });
+    return NextResponse.json({ message: "Course deleted successfully" });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return new NextResponse("Invalid courseId", { status: 400 });
+    }
+    console.error("[COURSE_DELETE]", error);
     return new NextResponse("An internal error occurred", { status: 500 });
   }
 }

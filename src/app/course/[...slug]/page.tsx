@@ -14,8 +14,9 @@ type Props = {
     }
 };
 
-const CoursePage = async({params: {slug}}: Props) => {
-    const [courseId, unitIndexParam, chapterIndexParam] = slug;
+const CoursePage = async({params}: Props) => {
+    const {slug} = params;
+    const [courseId, unitIndexParam, chapterIndexParam] = slug; 
     const session = await getAuthSession();
     if (!session?.user) {
         return redirect("/gallery");
@@ -67,42 +68,40 @@ const CoursePage = async({params: {slug}}: Props) => {
     const nextChapter = unit.chapters[chapterIndex + 1];
     const prevChapter = unit.chapters[chapterIndex - 1];
     return (
-       <div>
-        <CourseSideBar course={course} currentChapterId={chapter.id} />
-       <div>
-            <div className="ml-[400px] px-8">
-                <div>
-                    <MainVideoSummary chapter={chapter} unit={unit} unitIndex={unitIndex} chapterIndex={chapterIndex}/>
-                    <QuizCards chapter={chapter} />
-                </div>
-                <div className="flex-[1] h-px mt-4 bg-gray-500" />
-                <div className="flex pb-8">
-                    {prevChapter && (
-                        <Link href={`/course/${course.id}/${unitIndex}/${chapterIndex - 1}`} className="flex mt-4 mr-auto w-fit">
-                            <div className="flex items-center">
-                                <ChevronLeft className="w-6 h-6 mr-1"/>
-                                <div className='flex flex-col items-start'>
-                                    <span className='text-sm text-secondary-foreground/60'>Previous</span>
-                                    <span className='text-xl font-bold'>{prevChapter.name}</span>
-                                </div>
+       <div className="flex">
+        <div className="w-80 h-screen sticky top-0 overflow-y-auto">
+            <CourseSideBar course={course} currentChapterId={chapter.id} />
+        </div>
+        <div className="flex-1 overflow-y-auto p-8">
+            <MainVideoSummary chapter={chapter} unit={unit} unitIndex={unitIndex} chapterIndex={chapterIndex}/>
+            <QuizCards chapter={chapter} />
+            <div className="flex-[1] h-px mt-4 bg-gray-500" />
+            <div className="flex pb-8">
+                {prevChapter && (
+                    <Link href={`/course/${course.id}/${unitIndex}/${chapterIndex - 1}`} className="flex mt-4 mr-auto w-fit">
+                        <div className="flex items-center">
+                            <ChevronLeft className="w-6 h-6 mr-1"/>
+                            <div className='flex flex-col items-start'>
+                                <span className='text-sm text-secondary-foreground/60'>Previous</span>
+                                <span className='text-xl font-bold'>{prevChapter.name}</span>
                             </div>
-                        </Link>
-                    )}
-                    {nextChapter && (
-                        <Link href={`/course/${course.id}/${unitIndex}/${chapterIndex + 1}`} className="flex mt-4 ml-auto w-fit">
-                            <div className="flex items-center">
-                                <div className='flex flex-col items-start'>
-                                    <span className='text-sm text-secondary-foreground/60'>Next</span>
-                                    <span className='text-xl font-bold'>{nextChapter.name}</span>
-                                </div>
-                                <ChevronRight className="w-6 h-6 ml-1"/>
+                        </div>
+                    </Link>
+                )}
+                {nextChapter && (
+                    <Link href={`/course/${course.id}/${unitIndex}/${chapterIndex + 1}`} className="flex mt-4 ml-auto w-fit">
+                        <div className="flex items-center">
+                            <div className='flex flex-col items-start'>
+                                <span className='text-sm text-secondary-foreground/60'>Next</span>
+                                <span className='text-xl font-bold'>{nextChapter.name}</span>
                             </div>
-                        </Link>
-                    )}
-                </div>
+                            <ChevronRight className="w-6 h-6 ml-1"/>
+                        </div>
+                    </Link>
+                )}
             </div>
+        </div>
        </div>
-       </div> 
     )
 };
 

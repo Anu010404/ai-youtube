@@ -47,7 +47,7 @@ export async function strict_output(
 
     // try-catch block to ensure output format is adhered to
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+      const model = genAI.getGenerativeModel({ model: "gemini-pro-latest" }); // Ensure this is gemini-pro
       const full_prompt =
         system_prompt +
         output_format_prompt +

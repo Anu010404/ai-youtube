@@ -55,6 +55,7 @@ model Course {
   units  Unit[]
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  totalCredits Int @default(0)
 }
 
 model Unit {
@@ -80,6 +81,7 @@ model Chapter {
   quiz               Quiz?
   createdAt          DateTime              @default(now())
   updatedAt          DateTime              @updatedAt
+  credits            Int                   @default(2)
 }
 
 // Add this new model for Quizzes
@@ -89,7 +91,7 @@ model Quiz {
   unitId    String
   chapterId String? @unique // A quiz can optionally belong to a specific chapter
   type      String // "CHAPTER", "UNIT_TEST", or "COURSE_TEST"
-
+  credits   Int     @default(0)
   unit      Unit               @relation(fields: [unitId], references: [id], onDelete: Cascade)
   chapter   Chapter?           @relation(fields: [chapterId], references: [id], onDelete: Cascade)
   questions Question[]

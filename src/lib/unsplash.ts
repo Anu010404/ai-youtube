@@ -1,6 +1,9 @@
 export const getUnsplashImage = async (query: string) => {
   const imageResponseRaw = await fetch(
-    `https://api.unsplash.com/search/photos?per_page=1&query=${query}&client_id=${process.env.UNSPLASH_API_KEY}`
+    `https://api.unsplash.com/search/photos?per_page=1&query=${query}&client_id=${process.env.UNSPLASH_API_KEY}`,
+    {
+      signal: AbortSignal.timeout(20000), // Add a 20-second timeout
+    }
   );
   const imageResponse = await imageResponseRaw.json();
   if (!imageResponse.results || imageResponse.results.length === 0) {

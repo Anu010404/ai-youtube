@@ -8,20 +8,16 @@ import { getAuthSession } from "@/lib/auth";
 import {
   getRankedVideos,
   getTranscript,
-  generateSummary,
   generateQuizQuestions,
 } from "@/lib/youtube";
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
     const session = await getAuthSession();
     if (!session?.user) {
       return new NextResponse("unauthorized", { status: 401 });
     }
-    if (session.user.credits < 1) {
-      return new NextResponse("no credits", { status: 402 });
-    }
-    const body = await request.json();
+    const body = await req.json();
     const { title, units } = createChaptersSchema.parse(body);
 
     type outputUnit = {
@@ -44,9 +40,9 @@ export async function POST(request: Request) {
       }
     );
 
-    const imageSearchTerm: { image_search_term: string } = await strict_output(
+    const imageSearchTerm = await strict_output(
       "You are an AI capable of finding the most relevant image for a course",
-      `Please provide a good image search term for the title of a course about ${title}. This search term will be fed into the Unsplash API, so make sure it is a good search term that will return good results.`,
+      `Please provide a good image search term for the title of a course about ${title}. This search term will be fed into the Unsplash API, so make sure it is a single word or a short, concise phrase (e.g., "JavaScript" or "Data Science") for the best results.`,
       {
         image_search_term: "a good search term for the course title",
       }
@@ -83,7 +79,9 @@ export async function POST(request: Request) {
 
         for (const chapter of unit.chapters) {
           console.log(`--- Processing Chapter: ${chapter.chapter_title} ---`);
-          const rankedVideos = await getRankedVideos(chapter.youtube_search_query);
+          const rankedVideos = await getRankedVideos(
+            chapter.youtube_search_query
+          );
           if (!rankedVideos || rankedVideos.length === 0) {
             console.warn(`No videos found for query: "${chapter.youtube_search_query}". Skipping chapter.`);
             continue;
@@ -98,10 +96,11 @@ export async function POST(request: Request) {
           if (contextForContent.trim().length > 50) {
             console.log(`Generating summary & questions for: "${chapter.chapter_title}"`);
             [summary, questions] = await Promise.all([
-              generateSummary(contextForContent),
+              Promise.resolve(null), // generateSummary removed
               generateQuizQuestions(contextForContent, 3),
             ]);
           }
+
           const chapterContext = summary || contextForContent;
           allChapterContexts.push(chapterContext);
           unitChapterContexts.push(chapterContext);
@@ -137,70 +136,34 @@ export async function POST(request: Request) {
           }
         }
 
-        // --- Unit Test Generation (at the end of each unit) ---
         if (unitChapterContexts.length > 0) {
-            const unitTestContext = unitChapterContexts.join("\n\n---\n\n");
-            const unitTestName = `Unit Test: ${unitTitle}`;
-            console.log(`Generating unit test: "${unitTestName}"`);
-            const unitTestQuestions = await generateQuizQuestions(unitTestContext, 5);
-
-            if (unitTestQuestions.length > 0) {
-                const quiz = await prisma.quiz.create({
-                    data: {
-                        name: unitTestName,
-                        type: "UNIT_TEST",
-                        unitId: prismaUnit.id,
-                    }
-                });
-                await prisma.question.createMany({
-                    data: unitTestQuestions.map(q => ({
-                        question: q.question,
-                        answer: q.answer,
-                        options: q.options,
-                        quizId: quiz.id,
-                    }))
-                });
-                console.log(`Successfully created unit test for: "${unitTitle}"`);
-            }
+          const unitTestContext = unitChapterContexts.join("\n\n---\n\n");
+          const unitTestName = `Unit Test: ${unitTitle}`;
+          console.log(`Generating unit test: "${unitTestName}"`);
+          const unitTestQuestions = await generateQuizQuestions(unitTestContext, 5);
+          if (unitTestQuestions.length > 0) {
+            const quiz = await prisma.quiz.create({
+              data: {
+                name: unitTestName,
+                type: "UNIT_TEST",
+                unitId: prismaUnit.id,
+              },
+            });
+            await prisma.question.createMany({
+              data: unitTestQuestions.map((q) => ({
+                question: q.question,
+                answer: q.answer,
+                options: q.options,
+                quizId: quiz.id,
+              })),
+            });
+            console.log(`Successfully created unit test for: "${unitTitle}"`);
+          }
         }
-
       } catch (unitError) {
         console.error(`\n---! FAILED TO PROCESS UNIT: ${unit.title} !---`, unitError);
       }
     }
-
-    if (allChapterContexts.length > 0 && lastUnitId) {
-      const courseTestContext = allChapterContexts.join("\n\n---\n\n");
-      const courseTestName = `Final Exam: ${title}`;
-      console.log(`\n--- Generating Final Course Exam: "${courseTestName}" ---`);
-      const courseTestQuestions = await generateQuizQuestions(courseTestContext, 10);
-
-      if (courseTestQuestions.length > 0) {
-        const quiz = await prisma.quiz.create({
-          data: {
-            name: courseTestName,
-            type: "COURSE_TEST",
-            unitId: lastUnitId,
-          },
-        });
-        await prisma.question.createMany({
-          data: courseTestQuestions.map((q) => ({
-            question: q.question,
-            answer: q.answer,
-            options: q.options,
-            quizId: quiz.id,
-          })),
-        });
-        console.log(`Successfully created final course exam for: "${title}"`);
-      } else {
-        console.warn(`Could not generate questions for the final course exam.`);
-      }
-    }
-
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { credits: { decrement: 1 } },
-    });
 
     return NextResponse.json({ course_id: course.id });
   } catch (error) {

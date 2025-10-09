@@ -15,14 +15,18 @@ const GalleryPage = async(props: Props) => {
         },
     });
   return (
-    <div className="py-8 mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 place-items-center">
-            {courses.map(course => {
-                return <GalleryCourseCard key={course.id} course={course} />
-            })}
-
-        </div>
-
+    <div className="py-8 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mb-8 text-center">
+        <h1 className="text-4xl font-bold">Gallery</h1>
+        <p className="text-lg text-muted-foreground">
+          Here are all the courses you have created
+        </p>
+      </div>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        {courses.map((course) => {
+          return <GalleryCourseCard course={course} key={course.id} />;
+        })}
+      </div>
     </div>
   )
 }
