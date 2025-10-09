@@ -1,12 +1,6 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { ZodError } from "zod";
 import { getAuthSession } from "@/lib/auth";
-
-const deleteCourseSchema = z.object({
-  courseId: z.string(),
-});
 
 export async function DELETE(
   req: Request,
@@ -18,7 +12,7 @@ export async function DELETE(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { courseId } = deleteCourseSchema.parse(params);
+    const { courseId } = params;
     const course = await prisma.course.findUnique({
       where: {
         id: courseId,
@@ -31,9 +25,6 @@ export async function DELETE(
     await prisma.course.delete({ where: { id: courseId } });
     return NextResponse.json({ message: "Course deleted successfully" });
   } catch (error) {
-    if (error instanceof ZodError) {
-      return new NextResponse("Invalid courseId", { status: 400 });
-    }
     console.error("[COURSE_DELETE]", error);
     return new NextResponse("An internal error occurred", { status: 500 });
   }

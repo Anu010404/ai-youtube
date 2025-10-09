@@ -14,8 +14,8 @@ type Props = {
     }
 };
 
-const CoursePage = async({params}: Props) => {
-    const {slug} = params;
+const CoursePage = async ({ params }: Props) => {
+    const { slug } = params;
     const [courseId, unitIndexParam, chapterIndexParam] = slug; 
     const session = await getAuthSession();
     if (!session?.user) {
