@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createChaptersSchema } from "@/validators/course";
+import { createCourseSchema } from "@/validators/course";
+import { z } from "zod";
 import { ZodError } from "zod";
 import { strict_output } from "@/lib/gpt";
 import { getUnsplashImage } from "@/lib/unsplash";
@@ -18,7 +19,9 @@ export async function POST(req: Request) {
       return new NextResponse("unauthorized", { status: 401 });
     }
     const body = await req.json();
-    const { title, units } = createChaptersSchema.parse(body);
+    const { title, description, level, units, keywords } = createCourseSchema
+      .extend({ keywords: z.array(z.string()) })
+      .parse(body);
 
     type outputUnit = {
       title: string;
@@ -27,12 +30,17 @@ export async function POST(req: Request) {
         chapter_title: string;
       }[];
     };
-
+    const systemPrompt = `You are an expert AI course creator. Your role is to generate a comprehensive and engaging course outline based on user-provided details.
+The user wants to create a course titled "${title}".
+Description: "${description}".
+The target audience is at a "${level}" level.
+The main keywords for this course are: ${keywords.join(", ")}.
+    
+Based on this, for each unit provided by the user, generate a list of relevant, specific, and engaging chapter titles. For each chapter, also create a highly-effective YouTube search query that will find a suitable educational video.`;
+    
     let output_units: outputUnit[] = await strict_output(
-      "You are an AI capable of curating course content, coming up with relevant chapter titles, and finding relevant youtube videos for each chapter",
-      units.map((unit) => {
-        return `It is your job to create a course about ${title}. The user has requested to create chapters for the unit: "${unit}". For each chapter, provide a detailed youtube search query that can be used to find an informative educational video.`;
-      }),
+      systemPrompt,
+      units.map((unit) => `Create chapters for the unit: "${unit}"`),
       {
         title: "title of the unit",
         chapters:
