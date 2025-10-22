@@ -74,7 +74,7 @@ export default function HomePage() {
           <div className="container mx-auto px-6 text-center">
             <h2 className="text-4xl font-bold mb-12 text-purple-300">Meet Our Team</h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              {["Alice", "Bob", "Clara", "David"].map((name) => (
+              {["Anushka", "Abhishek", "Hemant", "Akash"].map((name) => (
                 <div key={name} className="p-6 bg-[#2e0a5c]/60 rounded-2xl shadow-lg hover:scale-105 transition">
                   <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-purple-700 flex items-center justify-center text-xl font-bold text-white">
                     {name[0]}

@@ -1,0 +1,251 @@
+{
+  "98ce1c19d60fb3bc0098338eb947c14e3ee62979f7e13a2a45e0828793a2b0d2": [
+    {
+      "title": "Polymer",
+      "chapters": [
+        {
+          "chapter_title": "The World of Polymers: From Monomers to Giants",
+          "youtube_search_query": "Introduction to polymers and monomers for beginners"
+        },
+        {
+          "chapter_title": "Building Blocks: The Magic of Polymerization",
+          "youtube_search_query": "Addition vs Condensation polymerization explained simply"
+        },
+        {
+          "chapter_title": "Structure is Everything: How Shape Defines Function",
+          "youtube_search_query": "How polymer structure affects properties animation"
+        },
+        {
+          "chapter_title": "Meet the Plastics: A Tour of Everyday Polymers",
+          "youtube_search_query": "Everyday plastics explained PET HDPE PVC LDPE"
+        },
+        {
+          "chapter_title": "Decoding Polymers: Techniques for Characterization",
+          "youtube_search_query": "Introduction to polymer characterization techniques molecular weight"
+        },
+        {
+          "chapter_title": "Polymers of the Future: Innovations and Applications",
+          "youtube_search_query": "Amazing applications of modern polymers"
+        }
+      ]
+    },
+    {
+      "title": "Environment Chemistry",
+      "chapters": [
+        {
+          "chapter_title": "Our Planet's Chemistry: An Introduction",
+          "youtube_search_query": "Introduction to environmental chemistry and Earths spheres"
+        },
+        {
+          "chapter_title": "Chemistry of the Sky: Air Pollution and Climate Change",
+          "youtube_search_query": "Atmospheric chemistry and air pollution explained greenhouse effect acid rain"
+        },
+        {
+          "chapter_title": "The Vital Fluid: Water Chemistry and Pollution",
+          "youtube_search_query": "Water chemistry and sources of water pollution for college students"
+        },
+        {
+          "chapter_title": "Chemistry Beneath Our Feet: Soil and Contamination",
+          "youtube_search_query": "Introduction to soil chemistry and land pollution"
+        },
+        {
+          "chapter_title": "Towards a Cleaner World: Green Chemistry and Waste Management",
+          "youtube_search_query": "Principles of green chemistry and sustainable waste management"
+        },
+        {
+          "chapter_title": "Environmental Detective: How We Measure Pollutants",
+          "youtube_search_query": "How chromatography and spectroscopy are used in environmental analysis"
+        }
+      ]
+    }
+  ],
+  "bf3eac87cc90b54a48d2fddd0f76068718d446234b5a7ff4a5828808aa753199": [
+    {
+      "title": "Basics of Python",
+      "chapters": [
+        {
+          "youtube_search_query": "python for data science refresher tutorial",
+          "chapter_title": "Python for Data Science: A Quick Refresher"
+        },
+        {
+          "youtube_search_query": "python data structures for data analysis",
+          "chapter_title": "Mastering Data Structures: Lists, Dictionaries, and Tuples"
+        },
+        {
+          "youtube_search_query": "python functions and lambda for data science tutorial",
+          "chapter_title": "Efficient Coding: Leveraging Functions and Lambdas"
+        },
+        {
+          "youtube_search_query": "python list comprehension tutorial for beginners",
+          "chapter_title": "The Power of List Comprehensions for Data Manipulation"
+        }
+      ]
+    },
+    {
+      "title": "Numpy",
+      "chapters": [
+        {
+          "youtube_search_query": "introduction to numpy for data science",
+          "chapter_title": "Getting Started with NumPy: The Power of Ndarrays"
+        },
+        {
+          "youtube_search_query": "numpy array indexing and slicing tutorial",
+          "chapter_title": "Manipulating Data: NumPy Array Indexing and Slicing"
+        },
+        {
+          "youtube_search_query": "numpy universal functions explained",
+          "chapter_title": "High-Speed Computations with Universal Functions (ufuncs)"
+        },
+        {
+          "youtube_search_query": "numpy statistical functions tutorial",
+          "chapter_title": "Essential Statistics with NumPy: Mean, Median, and Standard Deviation"
+        },
+        {
+          "youtube_search_query": "generating data with numpy linspace random",
+          "chapter_title": "Practical NumPy: Generating Datasets for Plotting"
+        }
+      ]
+    },
+    {
+      "title": "Matplotlib",
+      "chapters": [
+        {
+          "youtube_search_query": "matplotlib pyplot tutorial for beginners",
+          "chapter_title": "Your First Plot: Introduction to Matplotlib's Pyplot API"
+        },
+        {
+          "youtube_search_query": "matplotlib figure and axes explained",
+          "chapter_title": "Anatomy of a Plot: Understanding Figures, Axes, and Spines"
+        },
+        {
+          "youtube_search_query": "matplotlib line bar scatter histogram tutorial",
+          "chapter_title": "Creating Core Visualizations: Line, Bar, Scatter, and Histograms"
+        },
+        {
+          "youtube_search_query": "matplotlib plot customization tutorial colors styles",
+          "chapter_title": "Making it Your Own: Customizing Plots with Colors, Labels, and Styles"
+        },
+        {
+          "youtube_search_query": "matplotlib subplots tutorial explained",
+          "chapter_title": "Comparative Analysis: Working with Multiple Subplots"
+        },
+        {
+          "youtube_search_query": "matplotlib data visualization project tutorial",
+          "chapter_title": "Project: Visualizing a Real-World Dataset from Start to Finish"
+        }
+      ]
+    }
+  ],
+  "60fd3bae6cdecf3f531ccaab7c36ff22f235c8bd58158a7ed3b4be1af472c092": [
+    {
+      "title": "Numpy",
+      "chapters": [
+        {
+          "chapter_title": "What is NumPy and Why Do We Need It?",
+          "youtube_search_query": "what is numpy python tutorial for beginners"
+        },
+        {
+          "chapter_title": "Your First NumPy Array: Creating Arrays from Scratch",
+          "youtube_search_query": "numpy create array tutorial python"
+        },
+        {
+          "chapter_title": "Slicing and Dicing: Accessing Data in NumPy Arrays",
+          "youtube_search_query": "numpy indexing and slicing tutorial"
+        },
+        {
+          "chapter_title": "Supercharged Math: Performing Fast Operations on Arrays",
+          "youtube_search_query": "numpy universal functions ufuncs explained"
+        },
+        {
+          "chapter_title": "Summarizing Your Data: Mean, Max, and More with NumPy",
+          "youtube_search_query": "numpy aggregate functions tutorial axis"
+        },
+        {
+          "chapter_title": "Putting It All Together: A Mini-Project with NumPy",
+          "youtube_search_query": "numpy for data analysis beginner project"
+        }
+      ]
+    },
+    {
+      "title": "Matplotlib",
+      "chapters": [
+        {
+          "chapter_title": "Hello, Chart! Creating Your First Plot with Matplotlib",
+          "youtube_search_query": "matplotlib tutorial for beginners first plot python"
+        },
+        {
+          "chapter_title": "Make It Your Own: Customizing Plot Titles, Labels, and Colors",
+          "youtube_search_query": "matplotlib plot customization tutorial python"
+        },
+        {
+          "chapter_title": "Bars and Bins: Visualizing Categories and Distributions",
+          "youtube_search_query": "matplotlib bar chart and histogram tutorial"
+        },
+        {
+          "chapter_title": "Finding Relationships: Creating Insightful Scatter Plots",
+          "youtube_search_query": "matplotlib scatter plot tutorial python"
+        },
+        {
+          "chapter_title": "The Big Picture: Combining Multiple Plots in One Figure",
+          "youtube_search_query": "matplotlib subplots tutorial explained"
+        },
+        {
+          "chapter_title": "Share Your Story: Saving Your Plots and Graphics",
+          "youtube_search_query": "matplotlib save plot savefig tutorial"
+        }
+      ]
+    }
+  ],
+  "849864e931a5ca6ac3e982adb35f0e4d5fd1235680a1be971a4731449ebba412": [
+    {
+      "title": "Numpy",
+      "chapters": [
+        {
+          "chapter_title": "What is NumPy and Why is it Essential for Data Science?",
+          "youtube_search_query": "NumPy introduction for beginners python"
+        },
+        {
+          "chapter_title": "Creating Your First NumPy Arrays",
+          "youtube_search_query": "creating numpy arrays python tutorial"
+        },
+        {
+          "chapter_title": "Indexing and Slicing: Accessing Data in NumPy Arrays",
+          "youtube_search_query": "numpy array indexing and slicing tutorial"
+        },
+        {
+          "chapter_title": "Fundamental Array Operations and Universal Functions",
+          "youtube_search_query": "numpy array operations for beginners"
+        },
+        {
+          "chapter_title": "Aggregating Data: Mean, Sum, Max, and Min in NumPy",
+          "youtube_search_query": "numpy aggregation functions tutorial python axis"
+        }
+      ]
+    },
+    {
+      "title": "Matplotlib",
+      "chapters": [
+        {
+          "chapter_title": "Your First Plot: Introduction to Matplotlib",
+          "youtube_search_query": "matplotlib introduction for beginners python"
+        },
+        {
+          "chapter_title": "Essential Plot Types: Line, Scatter, and Bar Charts",
+          "youtube_search_query": "matplotlib line scatter bar plot tutorial"
+        },
+        {
+          "chapter_title": "Making Plots Pretty: Customizing Titles, Labels, and Colors",
+          "youtube_search_query": "customize matplotlib plots python tutorial"
+        },
+        {
+          "chapter_title": "Visualizing More Data: Creating Subplots in Matplotlib",
+          "youtube_search_query": "matplotlib subplots explained for beginners"
+        },
+        {
+          "chapter_title": "Beyond the Basics: Creating Histograms and Pie Charts",
+          "youtube_search_query": "matplotlib histogram and pie chart tutorial python"
+        }
+      ]
+    }
+  ]
+}

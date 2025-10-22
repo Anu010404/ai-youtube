@@ -1,5 +1,6 @@
 import { YoutubeTranscript } from 'youtube-transcript';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { getAdvancedTranscript } from './transcript';
 
 const MAX_TRANSCRIPT_LENGTH = 5000; // Roughly 5000 characters, adjust as needed for token limits
 
@@ -64,16 +65,11 @@ export async function searchYouTube(searchQuery: string): Promise<YouTubeSearchR
  * @returns A promise that resolves to the transcript text or null if not available.
  */
 export async function getTranscript(videoId: string): Promise<string | null> {
-  try {
-    const transcript = await YoutubeTranscript.fetchTranscript(videoId, {
-      lang: "en",
-      country: "EN",
-    });
-    return transcript.map((t) => t.text).join(" ");
-  } catch (error) {
-    console.error(`Could not get transcript for video ${videoId}:`, error);
-    return null;
-  }
+  // Use the new advanced transcript function which includes fallbacks
+  const { transcript } = await getAdvancedTranscript(videoId);
+  // The new function handles errors internally and returns null on failure,
+  // so we can just return its result.
+  return transcript;
 }
 
 /**

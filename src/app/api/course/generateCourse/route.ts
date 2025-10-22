@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { createCourseSchema } from "@/validators/course";
 import { z } from "zod";
+import crypto from "crypto";
 import { ZodError } from "zod";
 import { strict_output } from "@/lib/gpt";
 import { getUnsplashImage } from "@/lib/unsplash";
 import { prisma } from "@/lib/db";
+import { getFromCache, setInCache } from "@/lib/cache";
 import { getAuthSession } from "@/lib/auth";
 import {
   getRankedVideos,
@@ -36,17 +38,41 @@ Description: "${description}".
 The target audience is at a "${level}" level.
 The main keywords for this course are: ${keywords.join(", ")}.
     
-Based on this, for each unit provided by the user, generate a list of relevant, specific, and engaging chapter titles. For each chapter, also create a highly-effective YouTube search query that will find a suitable educational video.`;
-    
-    let output_units: outputUnit[] = await strict_output(
-      systemPrompt,
-      units.map((unit) => `Create chapters for the unit: "${unit}"`),
-      {
-        title: "title of the unit",
-        chapters:
-          "an array of chapters, each chapter should have a youtube_search_query and a chapter_title key in the JSON object",
-      }
-    );
+Based on this, for each unit provided by the user, generate a list of relevant, specific, and engaging chapter titles. For each chapter, you MUST create a YouTube search query that is GUARANTEED to find a suitable educational video.
+
+**CRITICAL INSTRUCTIONS FOR YOUTUBE SEARCH QUERIES:**
+1.  **Prioritize Broad, Popular Terms:** Use search terms that are common and widely used in educational content. For niche topics, broaden the query to a more general concept that includes the niche.
+2.  **Focus on Educational Keywords:** Include words like "introduction", "tutorial", "explained", "for beginners", or "deep dive".
+3.  **Be Direct:** The query should be a straightforward search phrase, not a question.
+
+**Example:**
+- For a chapter titled "The Role of Mitochondria in Cellular Respiration", a **GOOD** query is "cellular respiration and mitochondria explained" or "introduction to mitochondria function".
+- A **BAD** query would be "what specific function does the inner mitochondrial membrane have in the Krebs cycle". The bad query is too narrow and less likely to find a comprehensive video.`;
+
+    // --- Caching Logic ---
+    const cacheKey = crypto
+      .createHash("sha256")
+      .update(systemPrompt + units.join(""))
+      .digest("hex");
+
+    let output_units: outputUnit[] | null = await getFromCache<outputUnit[]>(cacheKey);
+
+    if (!output_units) {
+      console.log("🚀 Cache miss. Generating new course outline.");
+      output_units = await strict_output(
+        systemPrompt,
+        units.map((unit) => `Create chapters for the unit: "${unit}"`),
+        {
+          title: "title of the unit",
+          chapters:
+            "an array of chapters, each chapter should have a youtube_search_query and a chapter_title key in the JSON object",
+        }
+      );
+      // Save the generated outline to the cache
+      await setInCache(cacheKey, output_units);
+    } else {
+      console.log("✅ Cache hit. Reusing cached course outline.");
+    }
 
     const imageSearchTerm = await strict_output(
       "You are an AI capable of finding the most relevant image for a course",
